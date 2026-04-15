@@ -46,7 +46,7 @@ Outputs map strictly to a 1-channel QGIS-compliant `.tif` raster with embedded h
 
 This pipeline runs entirely in the cloud. No local setup required.
 
-1. **Open the Notebook:** Open `Geospatial_AI.ipynb` in Google Colab.
+1. **Open the Notebook:** Open `Geospatial_AI(1).ipynb` in Google Colab.
 2. **Enable GPU:** Go to the top menu, click `Runtime` > `Change runtime type`, and select **T4 GPU**.
 3. **Initialize Storage:** Run the very first code cell. It will connect to your Google Drive and automatically create a `TerraScan_Data` folder for you.
 4. **Upload Map:** Drop your `.tif` drone map directly into that newly created `TerraScan_Data` folder in your Google Drive.
