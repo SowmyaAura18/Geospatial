@@ -44,13 +44,13 @@ Outputs map strictly to a 1-channel QGIS-compliant `.tif` raster with embedded h
 
 ## ⚡ Zero-Config Cloud Deployment
 
-This pipeline is designed to execute in a serverless GPU environment with zero local dependency configuration.
+This pipeline runs entirely in the cloud. No local setup required.
 
-1. **Mount External Storage:** Create a directory named `TerraScan_Data` at the root of your Google Drive and upload your raw `.tif` binaries.
-2. **Launch the Engine:** Open the provided `TerraScan_Engine.ipynb` notebook in Google Colab.
-3. **Hardware Check:** Ensure the Runtime is set to a **T4 GPU** (Runtime > Change runtime type).
-4. **Execute:** Run all cells. The pipeline will automatically fetch the ResNet18 weights, install dependencies, manage port cleanup, and generate a secure Ngrok URL.
-5. **Access:** Click the Ngrok URL in the terminal output to access the TerraScan Hub Dashboard.
+1. **Open the Notebook:** Open `Geospatial_AI.ipynb` in Google Colab.
+2. **Enable GPU:** Go to the top menu, click `Runtime` > `Change runtime type`, and select **T4 GPU**.
+3. **Initialize Storage:** Run the very first code cell. It will connect to your Google Drive and automatically create a `TerraScan_Data` folder for you.
+4. **Upload Map:** Drop your `.tif` drone map directly into that newly created `TerraScan_Data` folder in your Google Drive.
+5. **Launch:** Click `Runtime` > `Run all`. The engine will build the environment and generate a secure Ngrok link at the bottom. Click the link to open the app!
 
 ---
 
