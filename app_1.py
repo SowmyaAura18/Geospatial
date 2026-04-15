@@ -38,80 +38,81 @@ st.markdown("""
     /* Solid Green Execute Button */
     .stButton>button { 
         width: 100%; 
-        border-radius: 4px; 
+        border-radius: 6px; 
         font-weight: bold; 
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         background-color: #2E7D32; /* Earthy Green */
         color: white; 
         border: 1px solid #1B5E20; 
         padding: 12px;
         transition: 0.2s;
+        margin-top: 10px;
     }
     .stButton>button:hover { 
         background-color: #1B5E20; 
         color: white;
         border: 1px solid #000000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     
     /* Clean Headers */
-    h1, h2, h3 {
+    h1, h2, h3, h4 {
         color: #2E7D32;
     }
     
-    /* Subtle Sidebar */
-    [data-testid="stSidebar"] {
+    /* Config Container */
+    div[data-testid="stForm"], div.css-11b3wvl {
         background-color: #F8F9FA;
-        border-right: 1px solid #E0E0E0;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR: WORKFLOW CONTROLS ---
-with st.sidebar:
-    st.markdown("<h1 style='text-align: center; font-size: 3rem;'>🌍</h1>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center;'>GeoVision</h2>", unsafe_allow_html=True)
-    st.caption("<div style='text-align: center;'>Spatial Data Extractor</div>", unsafe_allow_html=True)
-    st.divider()
-    
-    st.markdown("### 📂 Data Source Selection")
-    
-    # Auto-read from the Google Drive folder
-    drive_dir = "/content/drive/MyDrive/TerraScan_Data/"
-    available_tifs = glob.glob(f"{drive_dir}*.tif")
-    
-    if not available_tifs:
-        st.error("No .tif files found in Drive.")
-        selected_file_path = None
-    else:
-        file_options = [os.path.basename(f) for f in available_tifs]
-        chosen_file = st.selectbox("Target Orthomosaic:", file_options)
-        selected_file_path = os.path.join(drive_dir, chosen_file)
-    
-    st.markdown("### ⚙️ Engine Settings")
-    st.selectbox("Inference Model", ["ResNet-18 Multi-Class"], disabled=True)
-    st.slider("Morphological Strictness", 1, 10, 5)
-    
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    execute_button = st.button("▶ START ANALYSIS")
+# --- HEADER & METRICS ---
+st.markdown("<h1 style='text-align: center;'>🌍 GeoVision Analytics</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #555; font-size: 1.1rem;'>Topographical Infrastructure Mapping & Spatial Extraction</p>", unsafe_allow_html=True)
 
-# --- MAIN DASHBOARD ---
-st.title("Topographical Infrastructure Mapping")
-st.markdown("Automated classification of structural, hydrological, and road networks using deep learning.")
-st.divider()
-
-# --- SYSTEM HEALTH METRICS (Moved to top instead of sidebar) ---
-st.markdown("#### System Status")
+st.markdown("<br>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 c1.metric(label="GPU Acceleration", value="Active", delta="CUDA Detected")
 c2.metric(label="Cloud Storage", value="Linked", delta="Read/Write OK")
 c3.metric(label="Model Weights", value="Loaded", delta="ResNet18")
-st.markdown("<br>", unsafe_allow_html=True)
+st.divider()
+
+# --- CONFIGURATION PANEL (Main Page) ---
+with st.container(border=True):
+    st.markdown("### ⚙️ Job Configuration")
+    
+    cfg_col1, cfg_col2 = st.columns(2, gap="large")
+    
+    with cfg_col1:
+        st.markdown("**1. Data Acquisition**")
+        drive_dir = "/content/drive/MyDrive/TerraScan_Data/"
+        available_tifs = glob.glob(f"{drive_dir}*.tif")
+        
+        if not available_tifs:
+            st.error("No .tif files found in Drive. Please upload data.")
+            selected_file_path = None
+        else:
+            file_options = [os.path.basename(f) for f in available_tifs]
+            chosen_file = st.selectbox("Select Target Orthomosaic:", file_options)
+            selected_file_path = os.path.join(drive_dir, chosen_file)
+
+    with cfg_col2:
+        st.markdown("**2. Engine Parameters**")
+        st.selectbox("Active Inference Model", ["ResNet-18 Multi-Class (Default)"], disabled=True)
+        st.slider("Morphological Strictness Threshold", 1, 10, 5)
+
+    execute_button = st.button("▶ INITIATE SPATIAL ANALYSIS")
 
 # --- EXECUTION LOGIC ---
 if execute_button:
     if selected_file_path is None:
-        st.warning("⚠️ Please select a valid file from the sidebar.")
+        st.warning("⚠️ Please select a valid file to begin.")
     else:
+        st.markdown("<br>", unsafe_allow_html=True)
         with st.spinner("Initializing GeoVision Pipeline..."):
             try:
                 st.info("Step 1: Running deep learning inferences on raster tiles...")
@@ -130,13 +131,13 @@ if execute_button:
                 st.error(f"Pipeline Interrupted: {e}")
                 st.session_state.analysis_finished = False
 
-# --- RESULTS VIEWER (Clean Layout) ---
+# --- RESULTS VIEWER ---
 if st.session_state.analysis_finished and os.path.exists(st.session_state.output_raster):
     st.divider()
-    st.subheader("Data Inspector")
+    st.markdown("### 🔍 Extracted Data Inspector")
     
     # Viewer Controls
-    ctrl1, ctrl2 = st.columns(2)
+    ctrl1, ctrl2, ctrl3 = st.columns([2, 2, 1])
     with ctrl1:
         view_type = st.radio("Visualization Mode:", ["Standard Overlay", "Side-by-Side", "Extracted Features Only"], horizontal=True)
     with ctrl2:
@@ -144,6 +145,15 @@ if st.session_state.analysis_finished and os.path.exists(st.session_state.output
             "All Extracted Data", "1 - RCC Buildings", "2 - Metal Roofs", 
             "3 - Tiled Roofs", "4 - Utilities", "5 - Water Bodies", "6 - Road Networks"
         ])
+    with ctrl3:
+        st.markdown("<br>", unsafe_allow_html=True) # alignment
+        with open(st.session_state.output_raster, "rb") as file_to_dl:
+            st.download_button(
+                label="💾 Download QGIS Raster",
+                data=file_to_dl,
+                file_name=os.path.basename(st.session_state.output_raster),
+                mime="image/tiff"
+            )
 
     # Image Processing for Web Display
     with st.spinner("Generating web preview..."):
@@ -195,14 +205,3 @@ if st.session_state.analysis_finished and os.path.exists(st.session_state.output
             
         else:
             st.image(display_img, caption="Isolated Feature Map", use_container_width=True)
-
-    # Download Section
-    st.divider()
-    st.markdown("### Export Output")
-    with open(st.session_state.output_raster, "rb") as file_to_dl:
-        st.download_button(
-            label="💾 Download QGIS-Ready .TIF Raster",
-            data=file_to_dl,
-            file_name=os.path.basename(st.session_state.output_raster),
-            mime="image/tiff"
-        )
